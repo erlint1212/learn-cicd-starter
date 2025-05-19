@@ -1,4 +1,4 @@
-![test status](https://github.com/erlint1212/learn-cicd-starter/blob/addtests/.github/workflows/ci.yml/badge.svg)
+![CI Status](https://github.com/erlint1212/learn-cicd-starter/.github/workflows/ci.yml/badge.svg)
 
 # learn-cicd-starter (Notely)
 
