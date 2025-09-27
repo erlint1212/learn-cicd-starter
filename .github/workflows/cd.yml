@@ -9,6 +9,9 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: '${{ secrets.DATABASE_URL }}'
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -17,6 +20,9 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.25.1"
+
+      - name: Install goose
+        run: 'go install github.com/pressly/goose/v3/cmd/goose@v3.24.1'
 
       - name: Build the app
         run: ./scripts/buildprod.sh
@@ -34,6 +40,12 @@ jobs:
 
       - name: 'Build the Docker image and push it to Google Artifact Registry'
         run: 'gcloud builds submit --tag europe-north2-docker.pkg.dev/notely-473022/notely-ar-repo/notely:latest .'
+
+        # Reasons to run migration after building
+        # 1. Won't run the migration if there is a problem building the image.
+        # 2. The migration will be live before the new code is deployed.
+      - name: SQL goose migration
+        run: ./scripts/migrateup.sh
 
       - name: Deploy to Cloud Run
         run: 'gcloud run deploy notely --image europe-north2-docker.pkg.dev/notely-473022/notely-ar-repo/notely:latest --region europe-west1 --allow-unauthenticated --project notely-473022 --max-instances=4'
